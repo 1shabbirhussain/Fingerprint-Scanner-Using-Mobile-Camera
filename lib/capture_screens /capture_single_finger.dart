@@ -163,16 +163,25 @@ class _SingleFingerCapturePageState extends State<SingleFingerCapturePage> {
     return thresholdImage;
   }
 
-  Future<void> verifyFingers() async {
-    // Save captured images to temporary files
-    final tempDir = await getTemporaryDirectory();
-    final file1 = File('${tempDir.path}/finger1.jpg');
-    final file2 = File('${tempDir.path}/finger2.jpg');
-    await file1.writeAsBytes(firstCapturedImages[1]);
-    await file2.writeAsBytes(secondCapturedImages[1]);
+ Future<void> verifyFingers() async {
+    try {
+      // Ensure there are images to save
+      if (firstCapturedImages.isEmpty || secondCapturedImages.isEmpty) {
+        throw Exception('No images captured for verification');
+      }
 
-    // Use ApiService to upload images
-    ApiService apiService = ApiService(baseUrl: 'http://bioapi.fscscampus.com/api/values');
-    await apiService.uploadImages(file1, file2);
+      // Save captured images to temporary files
+      final tempDir = await getTemporaryDirectory();
+      final file1 = File('${tempDir.path}/finger1.jpg');
+      final file2 = File('${tempDir.path}/finger2.jpg');
+      await file1.writeAsBytes(firstCapturedImages[0]); // Changed index to 0
+      await file2.writeAsBytes(secondCapturedImages[0]); // Changed index to 0
+
+      // Use ApiService to upload images
+      ApiService apiService = ApiService(baseUrl: 'http://bioapi.fscscampus.com/api/values');
+      await apiService.uploadImages(file1, file2);
+    } catch (e) {
+      debugPrint('Error during verification: $e');
+    }
   }
 }

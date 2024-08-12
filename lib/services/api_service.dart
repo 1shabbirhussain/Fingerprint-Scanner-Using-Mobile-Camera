@@ -1,35 +1,37 @@
-import 'dart:convert';
 import 'dart:io';
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 class ApiService {
   final String baseUrl;
+  final Dio _dio;
 
-  ApiService({required this.baseUrl});
+  ApiService({required this.baseUrl})
+      : _dio = Dio(BaseOptions(
+          baseUrl: baseUrl,
+          connectTimeout: const Duration(seconds: 30),
+          receiveTimeout: const Duration(seconds: 30),
+        ));
 
   Future<void> uploadImages(File image1, File image2) async {
     try {
-      final url = Uri.parse('$baseUrl/Verify');
-      var request = http.MultipartRequest('POST', url);
+      final formData = FormData.fromMap({
+        'file1': await MultipartFile.fromFile(image1.path),
+        'file2': await MultipartFile.fromFile(image2.path),
+      });
 
-      request.files.add(await http.MultipartFile.fromPath('image1', image1.path));
-      request.files.add(await http.MultipartFile.fromPath('image2', image2.path));
-
-      var response = await request.send();
+      final response = await _dio.post('/Verify', data: formData);
 
       if (response.statusCode == 200) {
-        var responseData = await http.Response.fromStream(response);
-        var decodedResponse = json.decode(responseData.body);
+        // Directly access response data, no need for json.decode
+        final responseData = response.data as Map<String, dynamic>;
 
-        String status = decodedResponse['status'];
-        String score = decodedResponse['score'];
+        String status = responseData['status'];
+        String score = responseData['score'];
 
-        // Log the response
         print('Verification status: $status');
         print('Score of matched templates: $score');
 
-        // Show a toast message with the response status
         Fluttertoast.showToast(
           msg: "Status: $status, Score: $score",
           toastLength: Toast.LENGTH_LONG,
