@@ -10,7 +10,8 @@ class SingleFingerCapturePage extends StatefulWidget {
   const SingleFingerCapturePage({super.key});
 
   @override
-  _SingleFingerCapturePageState createState() => _SingleFingerCapturePageState();
+  _SingleFingerCapturePageState createState() =>
+      _SingleFingerCapturePageState();
 }
 
 class _SingleFingerCapturePageState extends State<SingleFingerCapturePage> {
@@ -31,7 +32,8 @@ class _SingleFingerCapturePageState extends State<SingleFingerCapturePage> {
       captureType: FingerprintCaptureType.leftHandFingers,
       helpText: FingerprintHelpTextOptions(
         messages: FingerprintHelpTextMessages(
-          leftHandMessage: "Place left hand finger \nuntil the marker is centered.",
+          leftHandMessage:
+              "Place left hand finger \nuntil the marker is centered.",
         ),
       ),
     );
@@ -54,7 +56,8 @@ class _SingleFingerCapturePageState extends State<SingleFingerCapturePage> {
             } else if (captureCount == 2) {
               secondCapturedImages.addAll(processedImages);
               captureButtonEnabled = false;
-              verifyButtonEnabled = true; // Enable verify button after second capture
+              verifyButtonEnabled =
+                  true; // Enable verify button after second capture
             }
           });
         }
@@ -67,7 +70,6 @@ class _SingleFingerCapturePageState extends State<SingleFingerCapturePage> {
       },
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -99,12 +101,14 @@ class _SingleFingerCapturePageState extends State<SingleFingerCapturePage> {
           ),
           Expanded(
             child: ListView.builder(
-              itemCount: firstCapturedImages.length + secondCapturedImages.length,
+              itemCount:
+                  firstCapturedImages.length + secondCapturedImages.length,
               itemBuilder: (context, index) {
                 if (index < firstCapturedImages.length) {
                   return Image.memory(firstCapturedImages[index]);
                 } else {
-                  return Image.memory(secondCapturedImages[index - firstCapturedImages.length]);
+                  return Image.memory(
+                      secondCapturedImages[index - firstCapturedImages.length]);
                 }
               },
             ),
@@ -113,8 +117,6 @@ class _SingleFingerCapturePageState extends State<SingleFingerCapturePage> {
       ),
     );
   }
-
-
 
   //METHODS TO HANDLE FINGERPRINT CAPTURE
 
@@ -159,11 +161,12 @@ class _SingleFingerCapturePageState extends State<SingleFingerCapturePage> {
         }
       }
     }
-
-    return thresholdImage;
+    //resize image
+    img.Image resizedImage =img.copyResize(thresholdImage, width: 200, height: 250);
+    return resizedImage;
   }
 
- Future<void> verifyFingers() async {
+  Future<void> verifyFingers() async {
     try {
       // Ensure there are images to save
       if (firstCapturedImages.isEmpty || secondCapturedImages.isEmpty) {
@@ -174,11 +177,12 @@ class _SingleFingerCapturePageState extends State<SingleFingerCapturePage> {
       final tempDir = await getTemporaryDirectory();
       final file1 = File('${tempDir.path}/finger1.jpg');
       final file2 = File('${tempDir.path}/finger2.jpg');
-      await file1.writeAsBytes(firstCapturedImages[0]); // Changed index to 0
-      await file2.writeAsBytes(secondCapturedImages[0]); // Changed index to 0
+      await file1.writeAsBytes(firstCapturedImages[1]); 
+      await file2.writeAsBytes(secondCapturedImages[1]);
 
       // Use ApiService to upload images
-      ApiService apiService = ApiService(baseUrl: 'http://bioapi.fscscampus.com/api/values');
+      ApiService apiService =
+          ApiService(baseUrl: 'http://bioapi.fscscampus.com/api/values');
       await apiService.uploadImages(file1, file2);
     } catch (e) {
       debugPrint('Error during verification: $e');
