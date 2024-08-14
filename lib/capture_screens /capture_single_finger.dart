@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'package:demo_project/capture_screens%20/captured_file_view.dart';
 import 'package:demo_project/services/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:image/image.dart' as img;
@@ -47,7 +48,7 @@ class _SingleFingerCapturePageState extends State<SingleFingerCapturePage> {
           setState(() {
             List<Uint8List> processedImages = images.map((imageBytes) {
               img.Image processedImage = processImage(imageBytes);
-              return Uint8List.fromList(img.encodeJpg(processedImage));
+              return Uint8List.fromList(img.encodePng(processedImage));
             }).toList();
 
             // Store in the appropriate list based on the capture count
@@ -95,6 +96,18 @@ class _SingleFingerCapturePageState extends State<SingleFingerCapturePage> {
           const SizedBox(height: 10),
           Center(
             child: ElevatedButton(
+              // onPressed: ()async{
+              //    final tempDir = await getTemporaryDirectory();
+              //   final file1 = await File('${tempDir.path}/finger1.png').create();
+              //   final file2 = await File('${tempDir.path}/finger2.png').create();
+              //   await file1.writeAsBytes(firstCapturedImages[1]); 
+              //   await file2.writeAsBytes(secondCapturedImages[1]).then((value) => Navigator.push(
+              //     context,
+              //     MaterialPageRoute(builder: (context) => CapturedFiles(file1: file1, file2: file2)),
+              //   ));
+                
+               
+              // },
               onPressed: verifyButtonEnabled ? verifyFingers : null,
               child: const Text('Verify Fingers'),
             ),
@@ -105,10 +118,10 @@ class _SingleFingerCapturePageState extends State<SingleFingerCapturePage> {
                   firstCapturedImages.length + secondCapturedImages.length,
               itemBuilder: (context, index) {
                 if (index < firstCapturedImages.length) {
-                  return Image.memory(firstCapturedImages[index]);
+                  return Image.memory(firstCapturedImages[1]);
                 } else {
                   return Image.memory(
-                      secondCapturedImages[index - firstCapturedImages.length]);
+                      secondCapturedImages[1]);
                 }
               },
             ),
@@ -162,8 +175,21 @@ class _SingleFingerCapturePageState extends State<SingleFingerCapturePage> {
       }
     }
     //resize image
-    img.Image resizedImage =img.copyResize(thresholdImage, width: 200, height: 250);
-    return resizedImage;
+    img.Image resizedImage =img.copyResize(thresholdImage, width: 200, height: 200,);
+     // Compress the image to reduce the size
+  List<int> compressedImageBytes = img.encodeJpg(resizedImage, quality: 40);
+
+  // Check the size and adjust if necessary
+  while (compressedImageBytes.length > 200 * 1024) {
+    // Reduce quality to reduce size
+    compressedImageBytes = img.encodeJpg(resizedImage, quality: 40);
+  }
+
+  // Decode the compressed image bytes back into an img.Image object
+  img.Image finalImage = img.decodeImage(compressedImageBytes)!;
+
+  return finalImage;
+    // return resizedImage;
   }
 
   Future<void> verifyFingers() async {
@@ -175,8 +201,8 @@ class _SingleFingerCapturePageState extends State<SingleFingerCapturePage> {
 
       // Save captured images to temporary files
       final tempDir = await getTemporaryDirectory();
-      final file1 = File('${tempDir.path}/finger1.jpg');
-      final file2 = File('${tempDir.path}/finger2.jpg');
+      final file1 = await File('${tempDir.path}/finger1.jpg').create();
+      final file2 = await File('${tempDir.path}/finger2.jpg').create();
       await file1.writeAsBytes(firstCapturedImages[1]); 
       await file2.writeAsBytes(secondCapturedImages[1]);
 
@@ -184,6 +210,7 @@ class _SingleFingerCapturePageState extends State<SingleFingerCapturePage> {
       ApiService apiService =
           ApiService(baseUrl: 'http://bioapi.fscscampus.com/api/values');
       await apiService.uploadImages(file1, file2);
+      
     } catch (e) {
       debugPrint('Error during verification: $e');
     }

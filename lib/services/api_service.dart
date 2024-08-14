@@ -11,16 +11,22 @@ class ApiService {
           baseUrl: baseUrl,
           connectTimeout: const Duration(seconds: 30),
           receiveTimeout: const Duration(seconds: 30),
-        ));
+      )
+        );
 
   Future<void> uploadImages(File image1, File image2) async {
+    MultipartFile file1 = await MultipartFile.fromFile(image1.path,filename: "image1.png",);
+    MultipartFile file2 = await MultipartFile.fromFile(image2.path,filename: "image2.png");
+
     try {
       final formData = FormData.fromMap({
-        'file1': await MultipartFile.fromFile(image1.path),
-        'file2': await MultipartFile.fromFile(image2.path),
+        'file1':file1,
+        'file2':file2,
       });
+      _dio.options.headers['content-Type'] = 'multipart/form-data';
+      _dio.options.headers['accept'] = 'application/json';
 
-      final response = await _dio.post('/Verify', data: formData);
+      final response = await _dio.post('/Verify', data: formData,options: Options());
 
       if (response.statusCode == 200) {
         // Directly access response data, no need for json.decode
