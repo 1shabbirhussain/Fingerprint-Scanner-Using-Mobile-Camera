@@ -76,14 +76,14 @@ class _SingleFingerCapturePageState extends State<SingleFingerCapturePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Capture Thumb'),
+        title: const Text('Capture Finger'),
       ),
       body: Column(
         children: [
           Center(
             child: ElevatedButton(
               onPressed: captureButtonEnabled ? takeFingerprint : null,
-              child: const Text('Capture Thumb'),
+              child: const Text('Capture Finger'),
             ),
           ),
           const SizedBox(height: 10),
