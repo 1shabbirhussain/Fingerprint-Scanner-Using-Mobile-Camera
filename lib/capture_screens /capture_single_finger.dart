@@ -1,5 +1,4 @@
 import 'dart:typed_data';
-import 'package:demo_project/capture_screens%20/captured_file_view.dart';
 import 'package:demo_project/services/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:image/image.dart' as img;
@@ -18,8 +17,6 @@ class SingleFingerCapturePage extends StatefulWidget {
 class _SingleFingerCapturePageState extends State<SingleFingerCapturePage> {
   late FingerprintController controller;
   List<Uint8List> firstCapturedImages = [];
-  List<Uint8List> secondCapturedImages = [];
-  int captureCount = 0;
   bool captureButtonEnabled = true;
   bool verifyButtonEnabled = false;
 
@@ -29,6 +26,14 @@ class _SingleFingerCapturePageState extends State<SingleFingerCapturePage> {
     final config = FingerprintConfig(
       numberFingersToCapture: 1,
       licenseKey: 'ZUGZ-CHWQ-2KJR-PQFI',
+      distanceIndicator: FingerprintDistanceIndicatorOptions(
+        tooCloseText: FingerprintTextOptions(
+          content: 'Too Close',
+        ),
+        tooFarText: FingerprintTextOptions(
+          content: 'Too Far',
+        ),
+      ),
       outputType: FingerprintOutputType.captureAndSegmentation,
       captureType: FingerprintCaptureType.leftHandFingers,
       helpText: FingerprintHelpTextOptions(
@@ -51,15 +56,10 @@ class _SingleFingerCapturePageState extends State<SingleFingerCapturePage> {
               return Uint8List.fromList(img.encodePng(processedImage));
             }).toList();
 
-            // Store in the appropriate list based on the capture count
-            if (captureCount == 1) {
-              firstCapturedImages.addAll(processedImages);
-            } else if (captureCount == 2) {
-              secondCapturedImages.addAll(processedImages);
-              captureButtonEnabled = false;
-              verifyButtonEnabled =
-                  true; // Enable verify button after second capture
-            }
+            // Store in the list
+            firstCapturedImages.addAll(processedImages);
+            captureButtonEnabled = false;
+            verifyButtonEnabled = true;
           });
         }
       },
@@ -96,33 +96,15 @@ class _SingleFingerCapturePageState extends State<SingleFingerCapturePage> {
           const SizedBox(height: 10),
           Center(
             child: ElevatedButton(
-              // onPressed: ()async{
-              //    final tempDir = await getTemporaryDirectory();
-              //   final file1 = await File('${tempDir.path}/finger1.png').create();
-              //   final file2 = await File('${tempDir.path}/finger2.png').create();
-              //   await file1.writeAsBytes(firstCapturedImages[1]); 
-              //   await file2.writeAsBytes(secondCapturedImages[1]).then((value) => Navigator.push(
-              //     context,
-              //     MaterialPageRoute(builder: (context) => CapturedFiles(file1: file1, file2: file2)),
-              //   ));
-                
-               
-              // },
-              onPressed: verifyButtonEnabled ? verifyFingers : null,
+              onPressed: verifyButtonEnabled ? getGrayscaleImage : null,
               child: const Text('Verify Fingers'),
             ),
           ),
           Expanded(
             child: ListView.builder(
-              itemCount:
-                  firstCapturedImages.length + secondCapturedImages.length,
+              itemCount: firstCapturedImages.length,
               itemBuilder: (context, index) {
-                if (index < firstCapturedImages.length) {
-                  return Image.memory(firstCapturedImages[1]);
-                } else {
-                  return Image.memory(
-                      secondCapturedImages[1]);
-                }
+                return Image.memory(firstCapturedImages[1]);
               },
             ),
           ),
@@ -135,7 +117,6 @@ class _SingleFingerCapturePageState extends State<SingleFingerCapturePage> {
 
   void takeFingerprint() async {
     if (captureButtonEnabled) {
-      captureCount++;
       await controller.takeFingerprint();
     }
   }
@@ -143,10 +124,8 @@ class _SingleFingerCapturePageState extends State<SingleFingerCapturePage> {
   void clearCapturedData() {
     setState(() {
       firstCapturedImages.clear();
-      secondCapturedImages.clear();
-      captureCount = 0;
       captureButtonEnabled = true;
-      verifyButtonEnabled = false; // Disable verify button
+      verifyButtonEnabled = false;
     });
   }
 
@@ -157,62 +136,89 @@ class _SingleFingerCapturePageState extends State<SingleFingerCapturePage> {
       throw ArgumentError('Unable to decode image');
     }
 
-    img.Image grayscale = img.grayscale(image);
-    img.Image thresholdImage = img.Image(grayscale.width, grayscale.height);
+    // img.Image grayscale = img.grayscale(image);
+    // img.Image thresholdImage = img.Image(grayscale.width, grayscale.height);
 
-    const int thresholdValue = 110;
+    // const int thresholdValue = 110;
 
-    for (int y = 0; y < grayscale.height; y++) {
-      for (int x = 0; x < grayscale.width; x++) {
-        int pixel = grayscale.getPixel(x, y);
-        int value = img.getRed(pixel);
+    // for (int y = 0; y < grayscale.height; y++) {
+    //   for (int x = 0; x < grayscale.width; x++) {
+    //     int pixel = grayscale.getPixel(x, y);
+    //     int value = img.getRed(pixel);
 
-        if (value > thresholdValue) {
-          thresholdImage.setPixel(x, y, img.getColor(255, 255, 255)); // White
-        } else {
-          thresholdImage.setPixel(x, y, img.getColor(0, 0, 0)); // Black
-        }
-      }
-    }
+    //     if (value > thresholdValue) {
+    //       thresholdImage.setPixel(x, y, img.getColor(255, 255, 255)); // White
+    //     } else {
+    //       thresholdImage.setPixel(x, y, img.getColor(0, 0, 0)); // Black
+    //     }
+    //   }
+    // }
     //resize image
-    img.Image resizedImage =img.copyResize(thresholdImage, width: 200, height: 200,);
-     // Compress the image to reduce the size
-  List<int> compressedImageBytes = img.encodeJpg(resizedImage, quality: 40);
+    img.Image resizedImage = img.copyResize(
+      image,
+      width: 250,
+      height: 250,
+    );
+    // Compress the image to reduce the size
+    List<int> compressedImageBytes = img.encodeJpg(resizedImage, quality: 80);
 
-  // Check the size and adjust if necessary
-  while (compressedImageBytes.length > 200 * 1024) {
-    // Reduce quality to reduce size
-    compressedImageBytes = img.encodeJpg(resizedImage, quality: 40);
-  }
+    // Check the size and adjust if necessary
+    while (compressedImageBytes.length > 200 * 1024) {
+      // Reduce quality to reduce size
+      compressedImageBytes = img.encodeJpg(resizedImage, quality: 80);
+    }
 
-  // Decode the compressed image bytes back into an img.Image object
-  img.Image finalImage = img.decodeImage(compressedImageBytes)!;
+    // Decode the compressed image bytes back into an img.Image object
+    img.Image finalImage = img.decodeImage(compressedImageBytes)!;
 
-  return finalImage;
+    return finalImage;
     // return resizedImage;
   }
 
-  Future<void> verifyFingers() async {
+  // Future<void> verifyFingers() async {
+  //   try {
+  //     // Ensure there are images to save
+  //     if (firstCapturedImages.isEmpty || secondCapturedImages.isEmpty) {
+  //       throw Exception('No images captured for verification');
+  //     }
+
+  //     // Save captured images to temporary files
+  //     final tempDir = await getTemporaryDirectory();
+  //     final file1 = await File('${tempDir.path}/finger1.jpg').create();
+  //     final file2 = await File('${tempDir.path}/finger2.jpg').create();
+  //     await file1.writeAsBytes(firstCapturedImages[1]);
+  //     await file2.writeAsBytes(secondCapturedImages[1]);
+
+  //     // Use ApiService to upload images
+  //     ApiService apiService =
+  //         ApiService(baseUrl: 'http://bioapi.fscscampus.com/api/values');
+  //     await apiService.uploadImages(file1, file2);
+
+  //   } catch (e) {
+  //     debugPrint('Error during verification: $e');
+  //   }
+  // }
+  Future<void> getGrayscaleImage() async {
     try {
       // Ensure there are images to save
-      if (firstCapturedImages.isEmpty || secondCapturedImages.isEmpty) {
+      if (firstCapturedImages.isEmpty) {
         throw Exception('No images captured for verification');
       }
 
       // Save captured images to temporary files
       final tempDir = await getTemporaryDirectory();
       final file1 = await File('${tempDir.path}/finger1.jpg').create();
-      final file2 = await File('${tempDir.path}/finger2.jpg').create();
-      await file1.writeAsBytes(firstCapturedImages[1]); 
-      await file2.writeAsBytes(secondCapturedImages[1]);
+      await file1.writeAsBytes(firstCapturedImages[1]);
 
       // Use ApiService to upload images
       ApiService apiService =
           ApiService(baseUrl: 'http://bioapi.fscscampus.com/api/values');
-      await apiService.uploadImages(file1, file2);
-      
+     await apiService.uploadImages(file1);
+      // Save the grayscale image to a file
+
     } catch (e) {
       debugPrint('Error during verification: $e');
     }
   }
+  
 }

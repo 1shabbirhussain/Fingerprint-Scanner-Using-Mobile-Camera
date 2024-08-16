@@ -14,35 +14,37 @@ class ApiService {
       )
         );
 
-  Future<void> uploadImages(File image1, File image2) async {
+  Future<void> uploadImages(File image1) async {
     MultipartFile file1 = await MultipartFile.fromFile(image1.path,filename: "image1.png",);
-    MultipartFile file2 = await MultipartFile.fromFile(image2.path,filename: "image2.png");
+    // MultipartFile file2 = await MultipartFile.fromFile(image2.path,filename: "image2.png");
 
     try {
       final formData = FormData.fromMap({
         'file1':file1,
-        'file2':file2,
+        // 'file2':file2,
       });
       _dio.options.headers['content-Type'] = 'multipart/form-data';
       _dio.options.headers['accept'] = 'application/json';
 
-      final response = await _dio.post('/Verify', data: formData,options: Options());
+      final response = await _dio.post('/', data: formData,options: Options());
 
       if (response.statusCode == 200) {
         // Directly access response data, no need for json.decode
-        final responseData = response.data as Map<String, dynamic>;
+        final responseData = response.data;
+        print(responseData.body);
+        print(responseData);
 
-        String status = responseData['status'];
-        String score = responseData['score'];
+        // String status = responseData['status'];
+        // String score = responseData['score'];
 
-        print('Verification status: $status');
-        print('Score of matched templates: $score');
+        // print('Verification status: $status');
+        // print('Score of matched templates: $score');
 
-        Fluttertoast.showToast(
-          msg: "Status: $status, Score: $score",
-          toastLength: Toast.LENGTH_LONG,
-          gravity: ToastGravity.BOTTOM,
-        );
+        // Fluttertoast.showToast(
+        //   msg: "Status: $status, Score: $score",
+        //   toastLength: Toast.LENGTH_LONG,
+        //   gravity: ToastGravity.BOTTOM,
+        // );
       } else {
         print('Failed to upload images: ${response.statusCode}');
         Fluttertoast.showToast(
