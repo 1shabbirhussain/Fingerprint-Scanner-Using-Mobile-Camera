@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'package:demo_project/services/api_service.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:image/image.dart' as img;
 import 'package:biopassid_fingerprint_sdk/biopassid_fingerprint_sdk.dart';
@@ -104,7 +105,7 @@ class _SingleFingerCapturePageState extends State<SingleFingerCapturePage> {
             child: ListView.builder(
               itemCount: firstCapturedImages.length,
               itemBuilder: (context, index) {
-                return Image.memory(firstCapturedImages[1]);
+                return Image.memory(firstCapturedImages[index]);
               },
             ),
           ),
@@ -136,42 +137,42 @@ class _SingleFingerCapturePageState extends State<SingleFingerCapturePage> {
       throw ArgumentError('Unable to decode image');
     }
 
-    // img.Image grayscale = img.grayscale(image);
-    // img.Image thresholdImage = img.Image(grayscale.width, grayscale.height);
+    img.Image grayscale = img.grayscale(image);
+    img.Image thresholdImage = img.Image(grayscale.width, grayscale.height);
 
-    // const int thresholdValue = 110;
+    const int thresholdValue = 110;
 
-    // for (int y = 0; y < grayscale.height; y++) {
-    //   for (int x = 0; x < grayscale.width; x++) {
-    //     int pixel = grayscale.getPixel(x, y);
-    //     int value = img.getRed(pixel);
+    for (int y = 0; y < grayscale.height; y++) {
+      for (int x = 0; x < grayscale.width; x++) {
+        int pixel = grayscale.getPixel(x, y);
+        int value = img.getRed(pixel);
 
-    //     if (value > thresholdValue) {
-    //       thresholdImage.setPixel(x, y, img.getColor(255, 255, 255)); // White
-    //     } else {
-    //       thresholdImage.setPixel(x, y, img.getColor(0, 0, 0)); // Black
-    //     }
-    //   }
-    // }
+        if (value > thresholdValue) {
+          thresholdImage.setPixel(x, y, img.getColor(255, 255, 255)); // White
+        } else {
+          thresholdImage.setPixel(x, y, img.getColor(0, 0, 0)); // Black
+        }
+      }
+    }
     //resize image
     img.Image resizedImage = img.copyResize(
-      image,
-      width: 250,
-      height: 250,
+      thresholdImage,
+      width: 400,
+      height: 500,
     );
     // Compress the image to reduce the size
-    List<int> compressedImageBytes = img.encodeJpg(resizedImage, quality: 80);
+    // List<int> compressedImageBytes = img.encodeJpg(resizedImage, quality: 80);
 
-    // Check the size and adjust if necessary
-    while (compressedImageBytes.length > 200 * 1024) {
-      // Reduce quality to reduce size
-      compressedImageBytes = img.encodeJpg(resizedImage, quality: 80);
-    }
+    // // Check the size and adjust if necessary
+    // while (compressedImageBytes.length > 200 * 1024) {
+    //   // Reduce quality to reduce size
+    //   compressedImageBytes = img.encodeJpg(resizedImage, quality: 80);
+    // }
 
-    // Decode the compressed image bytes back into an img.Image object
-    img.Image finalImage = img.decodeImage(compressedImageBytes)!;
+    // // Decode the compressed image bytes back into an img.Image object
+    // img.Image finalImage = img.decodeImage(compressedImageBytes)!;
 
-    return finalImage;
+    return resizedImage;
     // return resizedImage;
   }
 
@@ -211,14 +212,16 @@ class _SingleFingerCapturePageState extends State<SingleFingerCapturePage> {
       await file1.writeAsBytes(firstCapturedImages[1]);
 
       // Use ApiService to upload images
-      ApiService apiService =
-          ApiService(baseUrl: 'http://bioapi.fscscampus.com/api/values');
-     await apiService.uploadImages(file1);
+      Dio dio = Dio();
+      ImageUploadService imageUploadService = ImageUploadService(dio);
+      String? result = await imageUploadService.uploadImage(
+          file1, 'http://bioapi.fscscampus.com/api/values/');
+      if (result != null) {
+        print(result);
+      }
       // Save the grayscale image to a file
-
     } catch (e) {
       debugPrint('Error during verification: $e');
     }
   }
-  
 }
