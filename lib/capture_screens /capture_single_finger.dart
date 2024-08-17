@@ -25,6 +25,7 @@ class _SingleFingerCapturePageState extends State<SingleFingerCapturePage> {
   void initState() {
     super.initState();
     final config = FingerprintConfig(
+      
       numberFingersToCapture: 1,
       licenseKey: 'ZUGZ-CHWQ-2KJR-PQFI',
       distanceIndicator: FingerprintDistanceIndicatorOptions(

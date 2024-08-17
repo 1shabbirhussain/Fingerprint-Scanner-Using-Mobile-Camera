@@ -1,20 +1,20 @@
-import 'dart:io';
-
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
-class CapturedFiles extends StatelessWidget {
-  const CapturedFiles({super.key,required this.file1, required this.file2});
-final File file1;
-final File file2;
+class DisplayImagePage extends StatelessWidget {
+  final Uint8List imageBytes;
+
+  const DisplayImagePage({super.key, required this.imageBytes});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(children: [
-        Image.file(file1),
-        Image.file(file2),
-
-      ]),
+      appBar: AppBar(
+        title: const Text('Captured Image'),
+      ),
+      body: Center(
+        child: Image.memory(imageBytes),
+      ),
     );
   }
 }
