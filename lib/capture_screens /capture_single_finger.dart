@@ -25,7 +25,6 @@ class _SingleFingerCapturePageState extends State<SingleFingerCapturePage> {
   void initState() {
     super.initState();
     final config = FingerprintConfig(
-      
       numberFingersToCapture: 1,
       licenseKey: 'ZUGZ-CHWQ-2KJR-PQFI',
       distanceIndicator: FingerprintDistanceIndicatorOptions(
@@ -104,9 +103,11 @@ class _SingleFingerCapturePageState extends State<SingleFingerCapturePage> {
           ),
           Expanded(
             child: ListView.builder(
-              itemCount: firstCapturedImages.length,
+              itemCount: firstCapturedImages.length > 1
+                  ? firstCapturedImages.length - 1
+                  : 0,
               itemBuilder: (context, index) {
-                return Image.memory(firstCapturedImages[index]);
+                return Image.memory(firstCapturedImages[index + 1]);
               },
             ),
           ),
@@ -201,6 +202,16 @@ class _SingleFingerCapturePageState extends State<SingleFingerCapturePage> {
   //   }
   // }
   Future<void> getGrayscaleImage() async {
+    // Show loading dialog
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return const Center(
+          child: CircularProgressIndicator(),
+        );
+      },
+    );
     try {
       // Ensure there are images to save
       if (firstCapturedImages.isEmpty) {
@@ -215,14 +226,14 @@ class _SingleFingerCapturePageState extends State<SingleFingerCapturePage> {
       // Use ApiService to upload images
       Dio dio = Dio();
       ImageUploadService imageUploadService = ImageUploadService(dio);
-      String? result = await imageUploadService.uploadImage(
+      await imageUploadService.uploadImage(
           file1, 'http://bioapi.fscscampus.com/api/values/');
-      if (result != null) {
-        print(result);
-      }
-      // Save the grayscale image to a file
     } catch (e) {
       debugPrint('Error during verification: $e');
+    } finally {
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
     }
   }
 }
