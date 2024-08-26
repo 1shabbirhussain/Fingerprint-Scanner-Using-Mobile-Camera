@@ -1,5 +1,4 @@
 import 'dart:typed_data';
-import 'package:demo_project/services/api_service.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:image/image.dart' as img;
@@ -7,10 +6,13 @@ import 'package:biopassid_fingerprint_sdk/biopassid_fingerprint_sdk.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 
+import '../services/api_service.dart';
+
 class SingleFingerCapturePage extends StatefulWidget {
   const SingleFingerCapturePage({super.key});
 
   @override
+  // ignore: library_private_types_in_public_api
   _SingleFingerCapturePageState createState() =>
       _SingleFingerCapturePageState();
 }

@@ -1,4 +1,4 @@
-name: demo_project
+name: capture_fingerprints
 description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -42,6 +42,7 @@ dependencies:
   path_provider: ^2.1.4
   fluttertoast: ^8.2.5
   dio: ^5.5.0+1
+  icons_launcher: ^2.0.7
 
 dev_dependencies:
   flutter_test:
@@ -53,6 +54,14 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^2.0.0
+
+icons_launcher:
+  image_path: "assets/logo.png"
+  platforms:
+    android:
+      enable: true
+    ios:
+      enable: true
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -66,8 +75,8 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
+  assets:
+    - assets/logo.png
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

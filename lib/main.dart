@@ -1,4 +1,4 @@
-import 'package:demo_project/capture_screens%20/capture_single_finger.dart';
+import 'package:capture_fingerprints/capture_screens%20/capture_single_finger.dart';
 import 'package:flutter/material.dart';
 
 
