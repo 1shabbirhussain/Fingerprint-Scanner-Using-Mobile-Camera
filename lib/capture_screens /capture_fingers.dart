@@ -13,6 +13,7 @@ class FingerCapturePage extends StatefulWidget {
 
 class _FingerCapturePageState extends State<FingerCapturePage> {
   late FingerprintController controller;
+  // Saving images taht are captured by camera in Uint8List format in a list
   List<Uint8List> capturedImages = [];
 
   @override
@@ -43,6 +44,7 @@ class _FingerCapturePageState extends State<FingerCapturePage> {
     );
   }
 
+//This will capture fingerprint
   void takeFingerprint() async {
     await controller.takeFingerprint();
   }
