@@ -1,6 +1,6 @@
-# demo_project
+# FingerPrint Scanner Using Mobile Camera
 
-A new Flutter project.
+A App that scan your finger using mobile camera and process image using BIOPASSID sdk which remove background, select finger portion and return a grayish fingerprints, then IMAGE sdk from pub.dev apply grayscale over that image to make it pure blacka and white.
 
 ## Getting Started
 
